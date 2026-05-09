@@ -275,7 +275,7 @@ function BookingFlow({
             ))}
           </div>
 
-          <div className="p-6 md:p-8 min-h-[400px]">
+          <div className="p-6 md:p-8 flex-1 overflow-y-auto">
             {/* Step 1: Service */}
             {step === 1 && (
               <div className="space-y-3">
