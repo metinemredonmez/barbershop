@@ -91,8 +91,7 @@ export default function AdminLogin() {
         </Card>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Şifre <code className="bg-secondary px-1.5 py-0.5 rounded">.env</code>{" "}
-          dosyasındaki <code className="bg-secondary px-1.5 py-0.5 rounded">ADMIN_PASSWORD</code> değeridir.
+          Yetkisiz erişim girişimleri kayıt altına alınır.
         </p>
       </div>
     </div>

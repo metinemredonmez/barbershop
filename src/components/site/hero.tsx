@@ -23,7 +23,7 @@ export function Hero() {
             Premium Hair Artist
           </div>
 
-          <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight">
+          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight">
             <span className="block">Premium</span>
             <span className="block text-gold-gradient">Erkek Bakımı</span>
             <span className="block text-foreground/80">&amp; Modern Tıraş</span>
