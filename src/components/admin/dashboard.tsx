@@ -41,6 +41,8 @@ import {
 import { siteConfig } from "@/lib/site-config";
 import { cn, formatPrice } from "@/lib/utils";
 import { CalendarView } from "./calendar";
+import { CreateAppointmentButton } from "./create-appointment";
+import { EditAppointmentDialog } from "./edit-appointment";
 
 type Appointment = {
   id: string;
@@ -103,17 +105,11 @@ export function AdminDashboard({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [confirmDelete, setConfirmDelete] = useState<Appointment | null>(null);
-  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Appointment | null>(null);
 
-  const handleJumpToAppointment = (id: string) => {
-    setHighlightId(id);
-    setTimeout(() => {
-      const el = document.getElementById(`appt-${id}`);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 100);
-    setTimeout(() => setHighlightId(null), 3000);
+  const openEdit = (id: string) => {
+    const a = appointments.find((x) => x.id === id);
+    if (a) setEditing(a);
   };
 
   const stats = useMemo(() => {
@@ -244,12 +240,15 @@ export function AdminDashboard({
         </section>
 
         {/* Calendar */}
-        <CalendarView appointments={appointments} onJump={handleJumpToAppointment} />
+        <CalendarView appointments={appointments} onJump={openEdit} />
 
         {/* Filters */}
         <section>
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-            <h2 className="font-display text-2xl font-bold">Randevular</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="font-display text-2xl font-bold">Randevular</h2>
+              <CreateAppointmentButton services={services} />
+            </div>
             <div className="flex gap-2 flex-1 sm:flex-initial sm:max-w-md">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -310,11 +309,8 @@ export function AdminDashboard({
                         <tr
                           key={a.id}
                           id={`appt-${a.id}`}
-                          className={cn(
-                            "border-b border-border/40 hover:bg-secondary/20 transition-colors",
-                            highlightId === a.id &&
-                              "bg-gold/10 ring-2 ring-gold/40 ring-inset animate-pulse"
-                          )}
+                          className="border-b border-border/40 hover:bg-secondary/20 transition-colors cursor-pointer"
+                          onClick={() => setEditing(a)}
                         >
                           <td className="py-3 px-4">
                             <div className="font-medium">{a.customerName}</div>
@@ -352,7 +348,7 @@ export function AdminDashboard({
                               {STATUS_LABEL[a.status] || a.status}
                             </Badge>
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center gap-1 justify-end">
                               <Select
                                 value={a.status}
@@ -422,6 +418,14 @@ export function AdminDashboard({
           </Card>
         </section>
       </main>
+
+      {/* Edit appointment dialog (full update + delete + conflict warning) */}
+      <EditAppointmentDialog
+        appointment={editing}
+        services={services}
+        open={!!editing}
+        onOpenChange={(o) => !o && setEditing(null)}
+      />
 
       {/* Delete confirm dialog */}
       <Dialog

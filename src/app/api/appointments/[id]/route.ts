@@ -24,14 +24,58 @@ export async function PATCH(
   }
   const body = await req.json();
   if (body.status && !ALLOWED_STATUSES.includes(body.status)) {
-    return NextResponse.json(
-      { error: "Geçersiz durum." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Geçersiz durum." }, { status: 400 });
   }
+
+  const data: Record<string, unknown> = {};
+  if (typeof body.customerName === "string") data.customerName = body.customerName.trim();
+  if (typeof body.phone === "string") data.phone = body.phone.trim();
+  if (body.email !== undefined) data.email = body.email || null;
+  if (body.note !== undefined) data.note = body.note || null;
+  if (typeof body.serviceId === "string") data.serviceId = body.serviceId;
+  if (body.status) data.status = body.status;
+
+  let newDate: Date | null = null;
+  if (body.date) {
+    newDate = new Date(body.date);
+    if (Number.isNaN(newDate.getTime())) {
+      return NextResponse.json({ error: "Geçersiz tarih." }, { status: 400 });
+    }
+    data.date = newDate;
+  }
+
+  // If date is changing, check conflicts (skip own appointment)
+  if (newDate) {
+    const startWindow = new Date(newDate.getTime() - 30 * 60 * 1000);
+    const endWindow = new Date(newDate.getTime() + 30 * 60 * 1000);
+    const conflict = await prisma.appointment.findFirst({
+      where: {
+        id: { not: params.id },
+        date: { gte: startWindow, lte: endWindow },
+        status: { in: ["pending", "confirmed"] },
+      },
+      include: { service: true },
+    });
+
+    if (conflict) {
+      return NextResponse.json(
+        {
+          error: "Bu saat dolu, çakışma var.",
+          conflict: {
+            id: conflict.id,
+            customerName: conflict.customerName,
+            date: conflict.date,
+            service: conflict.service.name,
+          },
+        },
+        { status: 409 }
+      );
+    }
+  }
+
   const updated = await prisma.appointment.update({
     where: { id: params.id },
-    data: body,
+    data,
     include: { service: true },
   });
   return NextResponse.json({ appointment: updated });
