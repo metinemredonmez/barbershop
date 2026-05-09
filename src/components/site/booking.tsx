@@ -126,6 +126,7 @@ function BookingFlow({
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
+  const [kvkkAccepted, setKvkkAccepted] = useState(false);
   const [busy, setBusy] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -157,7 +158,11 @@ function BookingFlow({
     if (step === 1) return !!serviceId;
     if (step === 2) return !!date && !!time;
     if (step === 3)
-      return name.trim().length >= 2 && phone.trim().length >= 7;
+      return (
+        name.trim().length >= 2 &&
+        phone.trim().length >= 7 &&
+        kvkkAccepted
+      );
     return true;
   };
 
@@ -463,6 +468,33 @@ function BookingFlow({
                     rows={3}
                   />
                 </div>
+                <label className="flex items-start gap-3 p-3 rounded-md border border-border/60 bg-secondary/20 cursor-pointer hover:border-gold/40 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={kvkkAccepted}
+                    onChange={(e) => setKvkkAccepted(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-gold cursor-pointer"
+                  />
+                  <span className="text-xs text-muted-foreground leading-relaxed">
+                    <a
+                      href="/kvkk"
+                      target="_blank"
+                      className="text-gold hover:underline"
+                    >
+                      KVKK Aydınlatma Metni
+                    </a>
+                    &apos;ni okudum ve kişisel verilerimin randevu yönetimi
+                    amacıyla işlenmesini kabul ediyorum.{" "}
+                    <a
+                      href="/kullanim-kosullari"
+                      target="_blank"
+                      className="text-gold hover:underline"
+                    >
+                      Kullanım Koşulları
+                    </a>
+                    &apos;nı kabul ediyorum. *
+                  </span>
+                </label>
                 <p className="text-xs text-muted-foreground">
                   Randevuya gelmeyeceğinizi bildirmeden 2 saat içinde iptal
                   yapmazsanız bir sonraki randevunuz için kapora alınabilir.

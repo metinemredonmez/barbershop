@@ -6,7 +6,7 @@ export function Footer() {
   return (
     <footer className="border-t border-border/60 bg-secondary/20 py-14">
       <div className="container-narrow">
-        <div className="grid md:grid-cols-3 gap-10">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
             <Link href="/" className="flex items-center gap-2 group mb-4">
               <div className="h-9 w-9 rounded-md bg-gradient-to-br from-gold-600 to-gold-400 flex items-center justify-center shadow-lg shadow-gold/20">
@@ -30,7 +30,7 @@ export function Footer() {
 
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-widest text-gold mb-4">
-              Hızlı Bağlantılar
+              Site Haritası
             </h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
@@ -64,6 +64,34 @@ export function Footer() {
                   className="hover:text-gold transition-colors"
                 >
                   Yönetim
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold uppercase tracking-widest text-gold mb-4">
+              Yasal
+            </h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>
+                <Link href="/kvkk" className="hover:text-gold transition-colors">
+                  KVKK Aydınlatma Metni
+                </Link>
+              </li>
+              <li>
+                <Link href="/cerez-politikasi" className="hover:text-gold transition-colors">
+                  Çerez Politikası
+                </Link>
+              </li>
+              <li>
+                <Link href="/kullanim-kosullari" className="hover:text-gold transition-colors">
+                  Kullanım Koşulları
+                </Link>
+              </li>
+              <li>
+                <Link href="/iptal-politikasi" className="hover:text-gold transition-colors">
+                  İptal Politikası
                 </Link>
               </li>
             </ul>
