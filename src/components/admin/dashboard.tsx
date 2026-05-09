@@ -103,6 +103,18 @@ export function AdminDashboard({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [confirmDelete, setConfirmDelete] = useState<Appointment | null>(null);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+
+  const handleJumpToAppointment = (id: string) => {
+    setHighlightId(id);
+    setTimeout(() => {
+      const el = document.getElementById(`appt-${id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 100);
+    setTimeout(() => setHighlightId(null), 3000);
+  };
 
   const stats = useMemo(() => {
     const today = new Date();
@@ -232,7 +244,7 @@ export function AdminDashboard({
         </section>
 
         {/* Calendar */}
-        <CalendarView appointments={appointments} />
+        <CalendarView appointments={appointments} onJump={handleJumpToAppointment} />
 
         {/* Filters */}
         <section>
@@ -297,7 +309,12 @@ export function AdminDashboard({
                       return (
                         <tr
                           key={a.id}
-                          className="border-b border-border/40 hover:bg-secondary/20"
+                          id={`appt-${a.id}`}
+                          className={cn(
+                            "border-b border-border/40 hover:bg-secondary/20 transition-colors",
+                            highlightId === a.id &&
+                              "bg-gold/10 ring-2 ring-gold/40 ring-inset animate-pulse"
+                          )}
                         >
                           <td className="py-3 px-4">
                             <div className="font-medium">{a.customerName}</div>

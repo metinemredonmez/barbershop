@@ -67,8 +67,10 @@ const STATUS_VARIANT: Record<
 
 export function CalendarView({
   appointments,
+  onJump,
 }: {
   appointments: Appointment[];
+  onJump?: (id: string) => void;
 }) {
   const [cursor, setCursor] = useState(new Date());
   const [popupDay, setPopupDay] = useState<Date | null>(null);
@@ -277,15 +279,23 @@ export function CalendarView({
           ) : (
             <div className="max-h-[55vh] overflow-y-auto -mx-6 px-6 divide-y divide-border/60">
               {dayList.map((a) => (
-                <div
+                <button
                   key={a.id}
-                  className="flex items-center gap-4 py-3 first:pt-2"
+                  onClick={() => {
+                    if (onJump) {
+                      onJump(a.id);
+                      setPopupDay(null);
+                    }
+                  }}
+                  className="w-full flex items-center gap-4 py-3 first:pt-2 text-left rounded-md hover:bg-secondary/40 px-2 -mx-2 transition-colors group"
                 >
                   <div className="font-display font-bold text-gold tabular-nums w-16 text-lg">
                     {format(new Date(a.date), "HH:mm")}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{a.customerName}</div>
+                    <div className="font-medium truncate group-hover:text-gold transition-colors">
+                      {a.customerName}
+                    </div>
                     <div className="text-xs text-muted-foreground flex items-center gap-2">
                       <span>{a.service.name}</span>
                       <span>·</span>
@@ -295,18 +305,16 @@ export function CalendarView({
                         {formatPrice(a.service.price)}
                       </span>
                     </div>
-                    <a
-                      href={`tel:${a.phone}`}
-                      className="text-[11px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1 mt-0.5"
-                    >
+                    <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
                       <Phone className="h-3 w-3" />
                       {a.phone}
-                    </a>
+                    </div>
                   </div>
                   <Badge variant={STATUS_VARIANT[a.status] || "secondary"}>
                     {STATUS_LABEL[a.status] || a.status}
                   </Badge>
-                </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-1 transition-all" />
+                </button>
               ))}
             </div>
           )}
