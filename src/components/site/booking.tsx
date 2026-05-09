@@ -495,8 +495,8 @@ export function Booking({ services }: { services: Service[] }) {
             )}
           </div>
 
-          {/* Step nav */}
-          <div className="flex items-center justify-between gap-3 p-4 border-t border-border/60 bg-secondary/20">
+          {/* Step nav — sticky at bottom of viewport */}
+          <div className="sticky bottom-0 z-10 flex items-center justify-between gap-3 p-4 border-t border-border/60 bg-card/95 backdrop-blur-md shadow-[0_-8px_24px_rgba(0,0,0,0.3)]">
             <Button
               variant="ghost"
               size="sm"
@@ -506,11 +506,18 @@ export function Booking({ services }: { services: Service[] }) {
               <ChevronLeft className="h-4 w-4 mr-1" />
               Geri
             </Button>
+            {canNext() && step < 4 && (
+              <span className="hidden sm:flex text-xs text-gold/80 items-center gap-1 animate-pulse">
+                <ChevronRight className="h-3 w-3" />
+                Devam etmek için tıkla
+              </span>
+            )}
             {step < 4 ? (
               <Button
                 variant="gold"
                 disabled={!canNext()}
                 onClick={() => setStep(step + 1)}
+                className={canNext() ? "ring-2 ring-gold/40 ring-offset-2 ring-offset-background" : ""}
               >
                 Devam
                 <ChevronRight className="h-4 w-4 ml-1" />

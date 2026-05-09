@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/dialog";
 import { siteConfig } from "@/lib/site-config";
 import { cn, formatPrice } from "@/lib/utils";
+import { CalendarView } from "./calendar";
 
 type Appointment = {
   id: string;
@@ -230,6 +231,9 @@ export function AdminDashboard({
           />
         </section>
 
+        {/* Calendar */}
+        <CalendarView appointments={appointments} />
+
         {/* Filters */}
         <section>
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
@@ -399,15 +403,6 @@ export function AdminDashboard({
               ))}
             </div>
           </Card>
-          <p className="mt-3 text-xs text-muted-foreground">
-            Hizmet ekle/düzenle:{" "}
-            <code className="bg-secondary px-1.5 py-0.5 rounded">
-              prisma/seed.ts
-            </code>{" "}
-            dosyasını güncelleyip{" "}
-            <code className="bg-secondary px-1.5 py-0.5 rounded">npm run seed</code>{" "}
-            çalıştırın.
-          </p>
         </section>
       </main>
 

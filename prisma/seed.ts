@@ -27,7 +27,7 @@ const services = [
     name: "Çocuk Saç Kesimi",
     description: "Sabırlı ve nazik, çocuklara özel saç kesimi.",
     durationMin: 25,
-    price: 450,
+    price: 500,
     order: 3,
   },
   {
