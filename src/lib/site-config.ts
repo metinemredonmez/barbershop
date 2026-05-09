@@ -90,14 +90,61 @@ export const siteConfig = {
     },
   ],
   gallery: [
-    { id: 1, label: "Anatomik Kesim", style: "classic" },
-    { id: 2, label: "Klasik Kesim", style: "classic" },
-    { id: 3, label: "Modern Sakal", style: "beard" },
-    { id: 4, label: "Pompadour", style: "classic" },
-    { id: 5, label: "Marjinal Kesim", style: "classic" },
-    { id: 6, label: "Damat Paketi", style: "groom" },
-    { id: 7, label: "Çocuk Kesimi", style: "kids" },
-    { id: 8, label: "Ustura Tıraşı", style: "shave" },
+    {
+      id: 1,
+      label: "Anatomik Kesim",
+      style: "classic",
+      image:
+        "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=800&q=80&auto=format&fit=crop",
+    },
+    {
+      id: 2,
+      label: "Modern Stil",
+      style: "classic",
+      image:
+        "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=800&q=80&auto=format&fit=crop",
+    },
+    {
+      id: 3,
+      label: "Klasik Kesim",
+      style: "classic",
+      image:
+        "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=800&q=80&auto=format&fit=crop",
+    },
+    {
+      id: 4,
+      label: "Sakal Tasarımı",
+      style: "beard",
+      image:
+        "https://images.unsplash.com/photo-1493256338651-d82f7acb2b38?w=800&q=80&auto=format&fit=crop",
+    },
+    {
+      id: 5,
+      label: "Detay Çalışması",
+      style: "fade",
+      image: "/about.jpg",
+    },
+    {
+      id: 6,
+      label: "Premium Bakım",
+      style: "groom",
+      image:
+        "https://images.unsplash.com/photo-1567894340315-735d7c361db0?w=800&q=80&auto=format&fit=crop",
+    },
+    {
+      id: 7,
+      label: "Berber Atölyesi",
+      style: "shop",
+      image:
+        "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800&q=80&auto=format&fit=crop",
+    },
+    {
+      id: 8,
+      label: "Ustura Tıraşı",
+      style: "shave",
+      image:
+        "https://images.unsplash.com/photo-1622287162716-f311baa1a2b8?w=800&q=80&auto=format&fit=crop",
+    },
   ],
 };
 

@@ -67,62 +67,19 @@ export function Hero() {
 
         <div className="relative aspect-[4/5] max-w-md mx-auto lg:ml-auto w-full">
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-gold/20 via-transparent to-gold/5 blur-2xl" />
-          <div className="relative h-full rounded-2xl overflow-hidden border border-gold/20 bg-gradient-to-br from-secondary via-background to-secondary">
-            {/* SVG illustration as a placeholder for the hero image */}
-            <svg
-              className="absolute inset-0 w-full h-full opacity-90"
-              viewBox="0 0 400 500"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <defs>
-                <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#1a1a1a" />
-                  <stop offset="100%" stopColor="#0a0a0a" />
-                </linearGradient>
-                <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#C89B3C" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#C89B3C" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <rect width="400" height="500" fill="url(#g1)" />
-              <circle cx="200" cy="200" r="120" fill="url(#g2)" />
-              {/* Stylized scissors */}
-              <g
-                transform="translate(200,250) rotate(-30)"
-                stroke="#C89B3C"
-                strokeWidth="2"
-                fill="none"
-              >
-                <circle cx="-40" cy="-40" r="22" />
-                <circle cx="40" cy="-40" r="22" />
-                <line x1="-25" y1="-25" x2="80" y2="80" />
-                <line x1="25" y1="-25" x2="-80" y2="80" />
-              </g>
-              <text
-                x="200"
-                y="430"
-                textAnchor="middle"
-                fill="#C89B3C"
-                fontSize="14"
-                letterSpacing="6"
-                fontFamily="serif"
-                fontWeight="bold"
-              >
-                {siteConfig.brand}
-              </text>
-              <text
-                x="200"
-                y="450"
-                textAnchor="middle"
-                fill="#888"
-                fontSize="9"
-                letterSpacing="4"
-              >
-                MALTEPE · ISTANBUL
-              </text>
-            </svg>
-            <div className="absolute bottom-4 left-4 right-4 p-4 rounded-lg bg-black/50 backdrop-blur-md border border-gold/20">
+          <div className="relative h-full rounded-2xl overflow-hidden border border-gold/20">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/about.jpg"
+              alt={`${siteConfig.brand} - Premium Hair Artist`}
+              className="absolute inset-0 w-full h-full object-cover"
+              loading="eager"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+            <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-gold/30 text-[10px] uppercase tracking-[0.2em] text-gold">
+              {siteConfig.brand}
+            </div>
+            <div className="absolute bottom-4 left-4 right-4 p-4 rounded-lg bg-black/60 backdrop-blur-md border border-gold/20">
               <div className="text-xs uppercase tracking-widest text-gold/80 mb-1">
                 Çalışma Saatleri
               </div>

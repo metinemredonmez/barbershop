@@ -17,69 +17,25 @@ export function About() {
       className="py-20 md:py-28 bg-gradient-to-b from-background via-secondary/20 to-background relative"
     >
       <div className="container-narrow grid lg:grid-cols-2 gap-12 items-center">
-        <div className="relative aspect-square max-w-md w-full mx-auto lg:mx-0">
+        <div className="relative aspect-[3/4] max-w-md w-full mx-auto lg:mx-0">
           <div className="absolute -inset-4 rounded-2xl bg-gradient-to-br from-gold/20 via-transparent to-gold/5 blur-2xl" />
           <div className="relative h-full rounded-2xl overflow-hidden border border-gold/20">
-            <svg
-              className="w-full h-full"
-              viewBox="0 0 400 400"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <defs>
-                <linearGradient id="ag1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#161616" />
-                  <stop offset="100%" stopColor="#0a0a0a" />
-                </linearGradient>
-              </defs>
-              <rect width="400" height="400" fill="url(#ag1)" />
-              {[...Array(20)].map((_, i) => (
-                <line
-                  key={i}
-                  x1={i * 25}
-                  y1="0"
-                  x2={i * 25 - 200}
-                  y2="400"
-                  stroke="#C89B3C"
-                  strokeOpacity="0.04"
-                  strokeWidth="1"
-                />
-              ))}
-              <circle cx="200" cy="180" r="80" fill="#1a1a1a" stroke="#C89B3C" strokeOpacity="0.3" strokeWidth="1" />
-              <text
-                x="200"
-                y="195"
-                textAnchor="middle"
-                fill="#C89B3C"
-                fontSize="48"
-                fontFamily="serif"
-                fontWeight="bold"
-              >
-                {siteConfig.name.charAt(0)}
-              </text>
-              <text
-                x="200"
-                y="320"
-                textAnchor="middle"
-                fill="#fff"
-                fontSize="24"
-                fontFamily="serif"
-                fontWeight="bold"
-                letterSpacing="2"
-              >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=1200&q=80&auto=format&fit=crop"
+              alt={`${siteConfig.name} - ${siteConfig.brand}`}
+              className="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4">
+              <div className="font-display text-2xl font-bold tracking-wider text-white">
                 {siteConfig.name.toUpperCase()}
-              </text>
-              <text
-                x="200"
-                y="345"
-                textAnchor="middle"
-                fill="#888"
-                fontSize="11"
-                letterSpacing="6"
-              >
-                MASTER BARBER
-              </text>
-            </svg>
+              </div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mt-1">
+                Master Hair Artist
+              </div>
+            </div>
           </div>
           <div className="absolute -bottom-6 -right-6 hidden md:block bg-card border border-gold/30 rounded-xl p-4 shadow-xl">
             <div className="flex items-center gap-2 text-gold mb-1">
