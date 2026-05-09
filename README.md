@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Oğulcan Ateş Barber's Club
 
-## Getting Started
+Premium dark theme berber web sitesi + online randevu sistemi + admin paneli.
 
-First, run the development server:
+## Stack
+- Next.js 14 (App Router) + TypeScript
+- Tailwind CSS + shadcn/ui (premium dark + altın aksan)
+- Prisma + SQLite (prod'da Postgres'e geçilebilir)
+
+## Kurulum
 
 ```bash
+npm install
+cp .env.example .env
+# .env içindeki ADMIN_PASSWORD ve berber bilgilerini düzenle
+npx prisma migrate dev
+npm run seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Site: http://localhost:3000
+Admin: http://localhost:3000/admin/login
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Sayfalar
+- `/` — Landing (hero, hizmetler, hakkımda, galeri, randevu, yorumlar, çalışma saatleri, harita, FAQ)
+- `/admin/login` — Şifreyle giriş (`.env` → `ADMIN_PASSWORD`)
+- `/admin` — Randevu yönetimi (durum değiştir, sil, arama, filtreleme)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## API
+- `POST /api/appointments` — Yeni randevu (public)
+- `GET  /api/availability?date=YYYY-MM-DD` — Dolu saatler
+- `PATCH /api/appointments/:id` — Durum güncelle (admin)
+- `DELETE /api/appointments/:id` — Sil (admin)
+- `POST /api/admin/login` — Giriş
 
-## Learn More
+## Hizmet ekleme/düzenleme
+`prisma/seed.ts` dosyasını güncelle, sonra:
+```bash
+npm run seed
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Production
+Vercel için Postgres gerekir (SQLite read-only fs'de çalışmaz). Railway/VPS kullanırsan SQLite ile devam edebilirsin.
