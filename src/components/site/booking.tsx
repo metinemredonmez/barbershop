@@ -19,7 +19,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { SectionHeading } from "./section-heading";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn, formatPrice } from "@/lib/utils";
 
 type Service = {
@@ -65,6 +70,54 @@ const STEPS = [
 ];
 
 export function Booking({ services }: { services: Service[] }) {
+  const [open, setOpen] = useState(false);
+
+  // Open dialog when URL hash is #randevu
+  useEffect(() => {
+    const checkHash = () => {
+      if (typeof window !== "undefined" && window.location.hash === "#randevu") {
+        setOpen(true);
+      }
+    };
+    checkHash();
+    window.addEventListener("hashchange", checkHash);
+    return () => window.removeEventListener("hashchange", checkHash);
+  }, []);
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (!next && typeof window !== "undefined" && window.location.hash === "#randevu") {
+      // Clear hash when closing
+      history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-3xl p-0 gap-0 max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="px-6 pt-6 pb-2">
+          <DialogTitle className="font-display text-2xl">
+            Randevunu 30 Saniyede Al
+          </DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Hizmetini ve saatini seç, bilgilerini gir.
+          </p>
+        </DialogHeader>
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <BookingFlow services={services} onDone={() => handleOpenChange(false)} />
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function BookingFlow({
+  services,
+  onDone,
+}: {
+  services: Service[];
+  onDone: () => void;
+}) {
   const [step, setStep] = useState(1);
   const [serviceId, setServiceId] = useState<string | null>(null);
   const [date, setDate] = useState<Date | null>(null);
@@ -156,65 +209,43 @@ export function Booking({ services }: { services: Service[] }) {
 
   if (done && selectedService && date && time) {
     return (
-      <section id="randevu" className="py-20 md:py-28">
-        <div className="container-narrow max-w-2xl">
-          <Card className="p-8 md:p-12 text-center border-gold/30 bg-gradient-to-b from-gold/5 to-transparent">
-            <div className="mx-auto h-16 w-16 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mb-6">
-              <Check className="h-8 w-8 text-gold" />
-            </div>
-            <h3 className="font-display text-3xl font-bold mb-2">
-              Randevunuz Alındı
-            </h3>
-            <p className="text-muted-foreground mb-8">
-              Sayın <span className="text-foreground">{name}</span>, randevunuz
-              için teşekkür ederiz. Detaylar aşağıdadır.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
-              <Card className="p-4">
-                <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
-                  Hizmet
-                </div>
-                <div className="font-medium">{selectedService.name}</div>
-              </Card>
-              <Card className="p-4">
-                <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
-                  Tarih
-                </div>
-                <div className="font-medium">
-                  {format(date, "d MMMM yyyy", { locale: tr })}
-                </div>
-              </Card>
-              <Card className="p-4">
-                <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
-                  Saat
-                </div>
-                <div className="font-medium">{time}</div>
-              </Card>
-            </div>
-            <div className="mt-8">
-              <Button onClick={reset} variant="outline">
-                Yeni Randevu
-              </Button>
-            </div>
-          </Card>
+      <div className="px-6 pb-6 pt-2 overflow-y-auto">
+        <div className="text-center py-6">
+          <div className="mx-auto h-14 w-14 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mb-4">
+            <Check className="h-7 w-7 text-gold" />
+          </div>
+          <h3 className="font-display text-2xl font-bold mb-1">
+            Randevunuz Alındı
+          </h3>
+          <p className="text-sm text-muted-foreground mb-6">
+            Sayın <span className="text-foreground">{name}</span>, randevunuz için teşekkür ederiz.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-left mb-6">
+            <Card className="p-3">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Hizmet</div>
+              <div className="text-sm font-medium mt-1">{selectedService.name}</div>
+            </Card>
+            <Card className="p-3">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Tarih</div>
+              <div className="text-sm font-medium mt-1">{format(date, "d MMMM yyyy", { locale: tr })}</div>
+            </Card>
+            <Card className="p-3">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Saat</div>
+              <div className="text-sm font-medium mt-1">{time}</div>
+            </Card>
+          </div>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={reset} variant="outline">Yeni Randevu</Button>
+            <Button onClick={onDone} variant="gold">Kapat</Button>
+          </div>
         </div>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section
-      id="randevu"
-      className="py-20 md:py-28 bg-gradient-to-b from-background via-secondary/20 to-background"
-    >
-      <div className="container-narrow max-w-3xl">
-        <SectionHeading
-          eyebrow="Online Randevu"
-          title="Randevunu 30 Saniyede Al"
-          description="Hizmetini ve saatini seç, bilgilerini gir. Hepsi bu kadar."
-        />
-
-        <Card className="mt-12 overflow-hidden">
+    <>
+      <Card className="m-0 rounded-none border-0 overflow-hidden flex-1 flex flex-col">
           {/* Steps */}
           <div className="grid grid-cols-4 border-b border-border/60 bg-secondary/30">
             {STEPS.map((s) => (
@@ -536,8 +567,7 @@ export function Booking({ services }: { services: Service[] }) {
               </Button>
             )}
           </div>
-        </Card>
-      </div>
-    </section>
+      </Card>
+    </>
   );
 }
