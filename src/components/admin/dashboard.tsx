@@ -39,7 +39,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { siteConfig } from "@/lib/site-config";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatPrice, getAppointmentTotals } from "@/lib/utils";
 import { CalendarView } from "./calendar";
 import { CreateAppointmentButton } from "./create-appointment";
 import { EditAppointmentDialog } from "./edit-appointment";
@@ -53,6 +53,7 @@ type Appointment = {
   date: Date | string;
   status: string;
   createdAt: Date | string;
+  extraServices: string | null;
   service: {
     id: string;
     name: string;
@@ -65,6 +66,7 @@ type Service = {
   id: string;
   name: string;
   price: number;
+  durationMin: number;
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -112,6 +114,11 @@ export function AdminDashboard({
     if (a) setEditing(a);
   };
 
+  const servicesById = useMemo(
+    () => new Map(services.map((s) => [s.id, s])),
+    [services]
+  );
+
   const stats = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -132,7 +139,10 @@ export function AdminDashboard({
           d.getFullYear() === today.getFullYear()
         );
       })
-      .reduce((sum, a) => sum + a.service.price, 0);
+      .reduce((sum, a) => {
+        const totals = getAppointmentTotals(a, servicesById);
+        return sum + totals.total;
+      }, 0);
 
     return {
       total: appointments.length,
@@ -140,7 +150,7 @@ export function AdminDashboard({
       pending: pending.length,
       revenue: monthRevenue,
     };
-  }, [appointments]);
+  }, [appointments, servicesById]);
 
   const filtered = useMemo(() => {
     return appointments.filter((a) => {
@@ -305,6 +315,8 @@ export function AdminDashboard({
                   <tbody>
                     {filtered.map((a) => {
                       const d = new Date(a.date);
+                      const totals = getAppointmentTotals(a, servicesById);
+                      const extraCount = totals.services.length - 1;
                       return (
                         <tr
                           key={a.id}
@@ -328,9 +340,21 @@ export function AdminDashboard({
                             )}
                           </td>
                           <td className="py-3 px-4 hidden md:table-cell">
-                            <div>{a.service.name}</div>
+                            <div className="flex items-center gap-1.5">
+                              <span>{a.service.name}</span>
+                              {extraCount > 0 && (
+                                <span className="text-[10px] uppercase tracking-widest text-gold border border-gold/30 bg-gold/10 px-1.5 py-0.5 rounded-full">
+                                  +{extraCount}
+                                </span>
+                              )}
+                            </div>
                             <div className="text-xs text-muted-foreground">
-                              {a.service.durationMin} dk
+                              {totals.duration} dk
+                              {extraCount > 0 && (
+                                <span className="ml-1 text-gold/70">
+                                  · {totals.services.slice(1).map((s) => s.name).join(", ")}
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td className="py-3 px-4 tabular-nums">
@@ -341,7 +365,7 @@ export function AdminDashboard({
                             </div>
                           </td>
                           <td className="py-3 px-4 hidden lg:table-cell text-gold font-display font-bold">
-                            {formatPrice(a.service.price)}
+                            {formatPrice(totals.total)}
                           </td>
                           <td className="py-3 px-4">
                             <Badge variant={STATUS_VARIANT[a.status]}>

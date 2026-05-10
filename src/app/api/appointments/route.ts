@@ -5,7 +5,16 @@ import { cookies } from "next/headers";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { serviceId, date, customerName, phone, email, note } = body;
+    const {
+      serviceId,
+      extraServiceIds,
+      date,
+      customerName,
+      phone,
+      email,
+      note,
+      status,
+    } = body;
 
     if (!serviceId || !date || !customerName || !phone) {
       return NextResponse.json(
@@ -24,6 +33,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validate extra services if provided
+    let extras: string[] = [];
+    if (Array.isArray(extraServiceIds) && extraServiceIds.length > 0) {
+      extras = extraServiceIds.filter(
+        (id) => typeof id === "string" && id !== serviceId
+      );
+      if (extras.length > 0) {
+        const found = await prisma.service.findMany({
+          where: { id: { in: extras } },
+          select: { id: true },
+        });
+        if (found.length !== extras.length) {
+          return NextResponse.json(
+            { error: "Bir veya daha fazla ek hizmet bulunamadı." },
+            { status: 404 }
+          );
+        }
+      }
+    }
+
     const target = new Date(date);
     if (Number.isNaN(target.getTime())) {
       return NextResponse.json(
@@ -32,41 +61,54 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (target < new Date()) {
+    // Admin can backdate; public POST cannot
+    const isAdmin = cookies().get("admin-auth")?.value === "ok";
+    if (!isAdmin && target < new Date()) {
       return NextResponse.json(
         { error: "Geçmiş bir tarihe randevu alamazsınız." },
         { status: 400 }
       );
     }
 
-    const startWindow = new Date(target.getTime() - 60 * 60 * 1000);
-    const endWindow = new Date(target.getTime() + 60 * 60 * 1000);
+    const startWindow = new Date(target.getTime() - 30 * 60 * 1000);
+    const endWindow = new Date(target.getTime() + 30 * 60 * 1000);
     const conflict = await prisma.appointment.findFirst({
       where: {
         date: { gte: startWindow, lte: endWindow },
         status: { in: ["pending", "confirmed"] },
       },
+      include: { service: true },
     });
 
-    if (
-      conflict &&
-      Math.abs(conflict.date.getTime() - target.getTime()) < 30 * 60 * 1000
-    ) {
+    if (conflict) {
       return NextResponse.json(
-        { error: "Bu saat dolu, lütfen başka bir saat seçin." },
+        {
+          error: "Bu saat dolu, lütfen başka bir saat seçin.",
+          conflict: {
+            id: conflict.id,
+            customerName: conflict.customerName,
+            date: conflict.date,
+            service: conflict.service.name,
+          },
+        },
         { status: 409 }
       );
     }
 
+    // Admin can set custom status; public defaults to pending
+    const finalStatus =
+      isAdmin && typeof status === "string" ? status : "pending";
+
     const appointment = await prisma.appointment.create({
       data: {
         serviceId,
+        extraServices: extras.length > 0 ? JSON.stringify(extras) : null,
         date: target,
         customerName,
         phone,
         email: email || null,
         note: note || null,
-        status: "pending",
+        status: finalStatus,
       },
       include: { service: true },
     });

@@ -35,6 +35,13 @@ export async function PATCH(
   if (typeof body.serviceId === "string") data.serviceId = body.serviceId;
   if (body.status) data.status = body.status;
 
+  if (Array.isArray(body.extraServiceIds)) {
+    const extras = body.extraServiceIds.filter(
+      (id: unknown) => typeof id === "string" && id !== body.serviceId
+    );
+    data.extraServices = extras.length > 0 ? JSON.stringify(extras) : null;
+  }
+
   let newDate: Date | null = null;
   if (body.date) {
     newDate = new Date(body.date);

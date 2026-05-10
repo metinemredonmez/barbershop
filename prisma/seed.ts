@@ -23,12 +23,21 @@ const services = [
     order: 2,
   },
   {
+    slug: "sac-sakal-total",
+    name: "Saç Sakal Total",
+    description:
+      "Anatomik saç kesimi + sakal tasarımı kombinasyonu. En çok tercih edilen paket.",
+    durationMin: 45,
+    price: 900,
+    order: 3,
+  },
+  {
     slug: "cocuk-sac-kesimi",
     name: "Çocuk Saç Kesimi",
     description: "Sabırlı ve nazik, çocuklara özel saç kesimi.",
     durationMin: 25,
     price: 500,
-    order: 3,
+    order: 4,
   },
   {
     slug: "kas-alimi",
@@ -36,7 +45,7 @@ const services = [
     description: "Yüz hatlarına uygun, kişiye özel kaş tasarımı.",
     durationMin: 15,
     price: 200,
-    order: 4,
+    order: 5,
   },
   {
     slug: "agda",
@@ -44,7 +53,7 @@ const services = [
     description: "Yüz ve boyun için temizlik ve şekillendirme ağdası.",
     durationMin: 15,
     price: 200,
-    order: 5,
+    order: 6,
   },
   {
     slug: "keratin-bakimi",
@@ -53,7 +62,7 @@ const services = [
       "Saç kalitesine göre keratin ve onarıcı bakım. Fiyat saç boyuna göre değişir (500–800 ₺).",
     durationMin: 60,
     price: 500,
-    order: 6,
+    order: 7,
   },
   {
     slug: "profesyonel-cilt-bakimi",
@@ -61,7 +70,7 @@ const services = [
     description: "Maske, peeling ve nemlendirme ile premium cilt bakımı.",
     durationMin: 40,
     price: 500,
-    order: 7,
+    order: 8,
   },
   {
     slug: "cilt-bakimi",
@@ -69,7 +78,7 @@ const services = [
     description: "Standart yüz temizliği ve nemlendirme bakımı.",
     durationMin: 25,
     price: 200,
-    order: 8,
+    order: 9,
   },
   {
     slug: "brezilya-fonu",
@@ -77,7 +86,7 @@ const services = [
     description: "Saçı uzun süreli düzleştiren ve parlatan profesyonel uygulama.",
     durationMin: 90,
     price: 800,
-    order: 9,
+    order: 10,
   },
   {
     slug: "sac-boyama",
@@ -86,7 +95,7 @@ const services = [
       "Profesyonel saç boyama. Fiyat saç boyu ve teknik bağlı (800–1300 ₺).",
     durationMin: 75,
     price: 800,
-    order: 10,
+    order: 11,
   },
   {
     slug: "vip-paket",
@@ -95,7 +104,7 @@ const services = [
       "Teknik saç & sakal kesimi + cilt ve keratin bakımı + kaş tasarımı. 75 dakika premium deneyim.",
     durationMin: 75,
     price: 1900,
-    order: 11,
+    order: 12,
   },
 ];
 
