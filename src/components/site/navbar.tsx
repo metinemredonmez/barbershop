@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Menu, X, Scissors } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
@@ -36,10 +36,13 @@ export function Navbar() {
       )}
     >
       <div className="container-narrow flex h-16 md:h-20 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="h-9 w-9 rounded-md bg-gradient-to-br from-gold-600 to-gold-400 flex items-center justify-center shadow-lg shadow-gold/20 group-hover:shadow-gold/40 transition-shadow">
-            <Scissors className="h-5 w-5 text-black" />
-          </div>
+        <Link href="/" className="flex items-center gap-2.5 group">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-mark-gold.png"
+            alt={siteConfig.brand}
+            className="h-10 w-auto group-hover:scale-105 transition-transform"
+          />
           <div className="leading-tight">
             <div className="font-display text-lg font-bold tracking-wider text-gold">
               {siteConfig.brand}

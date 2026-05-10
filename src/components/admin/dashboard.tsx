@@ -197,10 +197,9 @@ export function AdminDashboard({
       {/* Header */}
       <header className="border-b border-border/60 bg-background/95 backdrop-blur sticky top-0 z-30">
         <div className="container-narrow py-4 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="h-8 w-8 rounded-md bg-gradient-to-br from-gold-600 to-gold-400 flex items-center justify-center">
-              <Scissors className="h-4 w-4 text-black" />
-            </div>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-mark-gold.png" alt={siteConfig.brand} className="h-8 w-auto" />
             <div className="leading-tight">
               <div className="text-xs uppercase tracking-widest text-muted-foreground">
                 {siteConfig.brand}

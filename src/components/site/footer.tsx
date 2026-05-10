@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Scissors, Instagram, Phone, MessageCircle } from "lucide-react";
+import { Instagram, Phone, MessageCircle } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
 
 export function Footer() {
@@ -8,10 +8,13 @@ export function Footer() {
       <div className="container-narrow">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
-            <Link href="/" className="flex items-center gap-2 group mb-4">
-              <div className="h-9 w-9 rounded-md bg-gradient-to-br from-gold-600 to-gold-400 flex items-center justify-center shadow-lg shadow-gold/20">
-                <Scissors className="h-5 w-5 text-black" />
-              </div>
+            <Link href="/" className="flex items-center gap-2.5 group mb-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo-mark-gold.png"
+                alt={siteConfig.brand}
+                className="h-10 w-auto"
+              />
               <div>
                 <div className="font-display text-lg font-bold tracking-wider text-gold">
                   {siteConfig.brand}
