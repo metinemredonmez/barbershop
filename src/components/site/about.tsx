@@ -40,9 +40,9 @@ export function About() {
           <div className="absolute -bottom-6 -right-6 hidden md:block bg-card border border-gold/30 rounded-xl p-4 shadow-xl">
             <div className="flex items-center gap-2 text-gold mb-1">
               <Award className="h-4 w-4" />
-              <span className="text-xs uppercase tracking-widest">Google 5.0</span>
+              <span className="text-xs uppercase tracking-widest">12 Yıl</span>
             </div>
-            <div className="text-sm font-medium">25+ Yorum</div>
+            <div className="text-sm font-medium">Mesleki Deneyim</div>
           </div>
         </div>
 
@@ -59,19 +59,38 @@ export function About() {
           />
           <div className="mt-8 space-y-5 text-muted-foreground leading-relaxed">
             <p>
-              Ben{" "}
-              <span className="text-foreground font-medium">
-                {siteConfig.name}
-              </span>
-              . Erkek anatomik saç ve sakal kesimi, marjinal kadın saç kesimi
-              ve özel bakım hizmetleri sunuyorum. Amacım sadece tıraş yapmak
-              değil; yüz şekline, tarzına ve günlük hayatına uygun bir görünüm
-              oluşturmak.
+              <span className="text-foreground font-medium">12 yıllık</span>{" "}
+              deneyimim boyunca saç kesimini sadece bir meslek değil; yüz
+              anatomisi ve kişisel tarzın birleştiği bir{" "}
+              <span className="text-foreground/90">sanat</span> olarak gördüm.
+              Aldığım ileri seviye anatomik saç eğitimleri sayesinde her
+              müşterimin yüz hatlarını, saç yapısını ve karakterini analiz
+              ederek kişiye özel kesimler oluşturuyorum.
             </p>
             <p>
-              Modern berber kültürünü geleneksel tıraş ritüeliyle
-              birleştiriyorum. &ldquo;Her saç bir projedir; her kesim bir
-              imza bırakır.&rdquo;
+              Klasik ve modern çizgiyi bir araya getirirken; avangard, yaratıcı
+              ve özgün stillerden günlük kullanıma uygun doğal kesimlere kadar
+              geniş bir perspektifle çalışıyorum. Benim için önemli olan
+              yalnızca iyi bir saç kesimi değil, kişinin aynaya baktığında
+              kendini{" "}
+              <span className="text-foreground/90">
+                daha güçlü, daha özgüvenli ve daha iyi
+              </span>{" "}
+              hissetmesi.
+            </p>
+            <p>
+              Trendleri takip eden değil, onları kendi yorumuyla şekillendiren
+              bir anlayışla; detaylara önem veren, teknik altyapısı güçlü ve
+              sürekli kendini geliştiren bir yaklaşım benimsiyorum. Her
+              dokunuşta estetik, denge ve karakteri ön plana çıkararak, saç
+              tasarımını kişiye özel bir deneyime dönüştürüyorum.
+            </p>
+            <p className="text-foreground/90 italic font-display text-lg">
+              Ben{" "}
+              <span className="text-gold-gradient not-italic font-bold">
+                {siteConfig.name}
+              </span>
+              . Hadi tarzını birlikte yaratalım.
             </p>
           </div>
 
