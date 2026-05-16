@@ -27,7 +27,7 @@ const services = [
     name: "Saç Sakal Total",
     description:
       "Anatomik saç kesimi + sakal tasarımı kombinasyonu. En çok tercih edilen paket.",
-    durationMin: 45,
+    durationMin: 40,
     price: 900,
     order: 3,
   },

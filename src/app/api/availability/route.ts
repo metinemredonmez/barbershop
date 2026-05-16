@@ -9,11 +9,21 @@ const TIME_SLOTS = [
   "19:30", "20:00", "20:30",
 ];
 
+const DEFAULT_DURATION = 30;
+const SHOP_CLOSE = "21:00"; // randevu bu saatten sonra bitmemeli
+
 export async function GET(req: NextRequest) {
   const dateStr = req.nextUrl.searchParams.get("date");
   if (!dateStr) {
     return NextResponse.json({ busy: [] });
   }
+
+  const durationParam = Number(req.nextUrl.searchParams.get("duration"));
+  const newDuration =
+    Number.isFinite(durationParam) && durationParam > 0
+      ? durationParam
+      : DEFAULT_DURATION;
+
   const start = new Date(`${dateStr}T00:00:00.000`);
   const end = new Date(`${dateStr}T23:59:59.999`);
 
@@ -23,6 +33,7 @@ export async function GET(req: NextRequest) {
         date: { gte: start, lte: end },
         status: { in: ["pending", "confirmed"] },
       },
+      include: { service: { select: { durationMin: true } } },
     }),
     prisma.blockedSlot.findMany({
       where: {
@@ -35,26 +46,47 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
+  const closeAt = (() => {
+    const [ch, cm] = SHOP_CLOSE.split(":").map(Number);
+    const d = new Date(start);
+    d.setHours(ch, cm, 0, 0);
+    return d.getTime();
+  })();
+
   const busy = new Set<string>();
 
-  for (const a of appts) {
-    const d = new Date(a.date);
-    const h = d.getHours().toString().padStart(2, "0");
-    const m = d.getMinutes().toString().padStart(2, "0");
-    busy.add(`${h}:${m}`);
-  }
+  for (const t of TIME_SLOTS) {
+    const [h, m] = t.split(":").map(Number);
+    const slot = new Date(start);
+    slot.setHours(h, m, 0, 0);
+    const slotStart = slot.getTime();
+    const slotEnd = slotStart + newDuration * 60 * 1000;
 
-  // Bir TIME_SLOT, herhangi bir BlockedSlot aralığına denk düşüyorsa busy say.
-  for (const b of blocks) {
-    const bs = new Date(b.startAt).getTime();
-    const be = new Date(b.endAt).getTime();
-    for (const t of TIME_SLOTS) {
-      const [h, m] = t.split(":").map(Number);
-      const slot = new Date(start);
-      slot.setHours(h, m, 0, 0);
-      const ms = slot.getTime();
-      if (ms >= bs && ms < be) busy.add(t);
+    // Shop kapanışından sonra bitiyorsa seçilemez
+    if (slotEnd > closeAt) {
+      busy.add(t);
+      continue;
     }
+
+    // Mevcut randevulardan biriyle çakışıyor mu?
+    const collidesAppt = appts.some((a) => {
+      const aStart = new Date(a.date).getTime();
+      const aDur = a.service?.durationMin || DEFAULT_DURATION;
+      const aEnd = aStart + aDur * 60 * 1000;
+      return slotStart < aEnd && slotEnd > aStart;
+    });
+    if (collidesAppt) {
+      busy.add(t);
+      continue;
+    }
+
+    // Mola / kapalı saat ile çakışıyor mu?
+    const collidesBlock = blocks.some((b) => {
+      const bs = new Date(b.startAt).getTime();
+      const be = new Date(b.endAt).getTime();
+      return slotStart < be && slotEnd > bs;
+    });
+    if (collidesBlock) busy.add(t);
   }
 
   return NextResponse.json({ busy: Array.from(busy) });

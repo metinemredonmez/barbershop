@@ -172,12 +172,13 @@ function BookingFlow({
     if (!date) return;
     setLoadingSlots(true);
     const dateStr = format(date, "yyyy-MM-dd");
-    fetch(`/api/availability?date=${dateStr}`)
+    const dur = totalDuration > 0 ? totalDuration : 30;
+    fetch(`/api/availability?date=${dateStr}&duration=${dur}`)
       .then((r) => r.json())
       .then((data) => setBusy(data.busy || []))
       .catch(() => setBusy([]))
       .finally(() => setLoadingSlots(false));
-  }, [date]);
+  }, [date, totalDuration]);
 
   const canNext = () => {
     if (step === 1) return !!serviceId;

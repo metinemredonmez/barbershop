@@ -72,14 +72,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const startWindow = new Date(target.getTime() - 30 * 60 * 1000);
-    const endWindow = new Date(target.getTime() + 30 * 60 * 1000);
-    const conflict = await prisma.appointment.findFirst({
+    // Yeni randevunun bitiş zamanı (saç sakal 40dk vb. — service.durationMin'e göre)
+    const newDuration = service.durationMin || 30;
+    const targetEnd = new Date(target.getTime() + newDuration * 60 * 1000);
+
+    // Bu güne ait pending/confirmed randevuları çek, sürelerine göre overlap kontrolü yap
+    const dayStart = new Date(target);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(target);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    const sameDay = await prisma.appointment.findMany({
       where: {
-        date: { gte: startWindow, lte: endWindow },
+        date: { gte: dayStart, lte: dayEnd },
         status: { in: ["pending", "confirmed"] },
       },
       include: { service: true },
+    });
+
+    const conflict = sameDay.find((a) => {
+      const aStart = new Date(a.date).getTime();
+      const aEnd = aStart + (a.service.durationMin || 30) * 60 * 1000;
+      return target.getTime() < aEnd && targetEnd.getTime() > aStart;
     });
 
     if (conflict) {
@@ -97,11 +111,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Mola / kapalı saat kontrolü — admin de manuel olarak blocked saate
-    // randevu açamasın (yanlışlık riskini azaltır).
+    // Mola / kapalı saat kontrolü — randevunun süresiyle birlikte herhangi
+    // bir BlockedSlot aralığına denk düşüyorsa engelle.
     const blocked = await prisma.blockedSlot.findFirst({
       where: {
-        startAt: { lte: target },
+        startAt: { lt: targetEnd },
         endAt: { gt: target },
       },
     });
