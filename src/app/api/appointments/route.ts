@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
+import { notifyNewAppointment } from "@/lib/sms";
+import { pushNewAppointment } from "@/lib/push";
 
 export async function POST(req: NextRequest) {
   try {
@@ -95,6 +97,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Mola / kapalı saat kontrolü — admin de manuel olarak blocked saate
+    // randevu açamasın (yanlışlık riskini azaltır).
+    const blocked = await prisma.blockedSlot.findFirst({
+      where: {
+        startAt: { lte: target },
+        endAt: { gt: target },
+      },
+    });
+    if (blocked) {
+      return NextResponse.json(
+        {
+          error:
+            blocked.type === "off"
+              ? "Bu saat kapalı (off). Lütfen başka bir saat seçin."
+              : "Bu saat mola olarak işaretli. Lütfen başka bir saat seçin.",
+          blocked: {
+            id: blocked.id,
+            startAt: blocked.startAt,
+            endAt: blocked.endAt,
+            type: blocked.type,
+            reason: blocked.reason,
+          },
+        },
+        { status: 409 }
+      );
+    }
+
     // Admin can set custom status; public defaults to pending
     const finalStatus =
       isAdmin && typeof status === "string" ? status : "pending";
@@ -112,6 +141,15 @@ export async function POST(req: NextRequest) {
       },
       include: { service: true },
     });
+
+    // SMS bildirimi — yanıtı bloklamasın diye hatayı yutuyoruz, sadece logluyoruz.
+    notifyNewAppointment(appointment).catch((err) =>
+      console.error("[sms] notifyNewAppointment failed", err)
+    );
+    // OneSignal push bildirimi (berberin telefonu/masaüstü)
+    pushNewAppointment(appointment).catch((err) =>
+      console.error("[push] pushNewAppointment failed", err)
+    );
 
     return NextResponse.json({ appointment }, { status: 201 });
   } catch (e) {

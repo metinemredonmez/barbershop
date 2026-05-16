@@ -37,3 +37,17 @@ model Appointment {
   @@index([date])
   @@index([status])
 }
+
+model BlockedSlot {
+  id        String   @id @default(cuid())
+  // Start and end of the blocked range (inclusive start, exclusive end)
+  startAt   DateTime
+  endAt     DateTime
+  // "break" (mola) or "off" (kapalı/izin) — purely informational
+  type      String   @default("break")
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([startAt])
+  @@index([endAt])
+}

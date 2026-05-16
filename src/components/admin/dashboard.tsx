@@ -43,6 +43,7 @@ import { cn, formatPrice, getAppointmentTotals } from "@/lib/utils";
 import { CalendarView } from "./calendar";
 import { CreateAppointmentButton } from "./create-appointment";
 import { EditAppointmentDialog } from "./edit-appointment";
+import { BlockedSlotsCard } from "./blocked-slots";
 
 type Appointment = {
   id: string;
@@ -417,6 +418,9 @@ export function AdminDashboard({
             )}
           </Card>
         </section>
+
+        {/* Blocked slots / breaks */}
+        <BlockedSlotsCard />
 
         {/* Services list */}
         <section>
