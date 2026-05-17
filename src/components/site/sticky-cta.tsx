@@ -34,10 +34,12 @@ export function StickyCTA() {
         href={`https://wa.me/${siteConfig.whatsapp}`}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="WhatsApp"
-        className="hidden md:flex fixed bottom-6 right-6 z-30 h-14 w-14 rounded-full bg-green-500 hover:bg-green-600 text-white items-center justify-center shadow-xl shadow-green-500/30 hover:scale-110 transition-all"
+        aria-label="WhatsApp'tan Ulaşın"
+        title="WhatsApp'tan Ulaşın"
+        className="hidden md:flex fixed bottom-6 right-6 z-30 items-center gap-3 h-14 pl-5 pr-6 rounded-full bg-green-500 hover:bg-green-600 text-white font-semibold shadow-xl shadow-green-500/30 hover:scale-[1.03] transition-all"
       >
         <MessageCircle className="h-6 w-6" />
+        <span>WhatsApp&apos;tan Ulaşın</span>
       </a>
     </>
   );
