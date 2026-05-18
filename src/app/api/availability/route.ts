@@ -76,6 +76,8 @@ export async function GET(req: NextRequest) {
     return d.getTime();
   })();
 
+  const now = Date.now();
+
   const busy = new Set<string>();
 
   for (const t of TIME_SLOTS) {
@@ -84,6 +86,12 @@ export async function GET(req: NextRequest) {
     slot.setHours(h, m, 0, 0);
     const slotStart = slot.getTime();
     const slotEnd = slotStart + newDuration * 60 * 1000;
+
+    // Geçmiş saatler (bugün için): şu andan önceyse seçilemez
+    if (slotStart <= now) {
+      busy.add(t);
+      continue;
+    }
 
     // Shop kapanışından sonra bitiyorsa seçilemez
     if (slotEnd > closeAt) {

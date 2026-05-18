@@ -456,7 +456,11 @@ function BookingFlow({
                     </div>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
                       {TIME_SLOTS.map((t) => {
-                        const isBusy = busy.includes(t);
+                        const [hh, mm] = t.split(":").map(Number);
+                        const slotDate = new Date(date);
+                        slotDate.setHours(hh, mm, 0, 0);
+                        const isPastSlot = slotDate.getTime() <= Date.now();
+                        const isBusy = busy.includes(t) || isPastSlot;
                         const selected = time === t;
                         return (
                           <button
