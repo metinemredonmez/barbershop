@@ -12,7 +12,7 @@ export function WorkingHours() {
       <div className="container-narrow">
         <SectionHeading
           eyebrow="Çalışma Saatleri"
-          title="Ne Zaman Açıkız?"
+          title="Ne Zaman Açığız?"
           description="Son randevu kapanıştan 45 dakika önce alınabilir."
         />
 
