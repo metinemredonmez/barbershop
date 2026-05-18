@@ -3,6 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { notifyNewAppointment } from "@/lib/sms";
 import { pushNewAppointment } from "@/lib/push";
+import {
+  computeAppointmentDurationMin,
+  parseExtraServiceIds,
+} from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,6 +41,7 @@ export async function POST(req: NextRequest) {
 
     // Validate extra services if provided
     let extras: string[] = [];
+    let extrasDurationTotal = 0;
     if (Array.isArray(extraServiceIds) && extraServiceIds.length > 0) {
       extras = extraServiceIds.filter(
         (id) => typeof id === "string" && id !== serviceId
@@ -44,7 +49,7 @@ export async function POST(req: NextRequest) {
       if (extras.length > 0) {
         const found = await prisma.service.findMany({
           where: { id: { in: extras } },
-          select: { id: true },
+          select: { id: true, durationMin: true },
         });
         if (found.length !== extras.length) {
           return NextResponse.json(
@@ -52,6 +57,10 @@ export async function POST(req: NextRequest) {
             { status: 404 }
           );
         }
+        extrasDurationTotal = found.reduce(
+          (sum, s) => sum + (s.durationMin || 0),
+          0
+        );
       }
     }
 
@@ -72,8 +81,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Yeni randevunun bitiş zamanı (saç sakal 40dk vb. — service.durationMin'e göre)
-    const newDuration = service.durationMin || 30;
+    // Yeni randevunun bitiş zamanı: primary + extras toplam süresi
+    const newDuration = (service.durationMin || 30) + extrasDurationTotal;
     const targetEnd = new Date(target.getTime() + newDuration * 60 * 1000);
 
     // Bu güne ait pending/confirmed randevuları çek, sürelerine göre overlap kontrolü yap
@@ -90,9 +99,33 @@ export async function POST(req: NextRequest) {
       include: { service: true },
     });
 
+    // Çakışan günün diğer randevularının extras sürelerini de hesaba kat
+    const otherExtraIds = new Set<string>();
+    for (const a of sameDay) {
+      for (const id of parseExtraServiceIds(a.extraServices)) {
+        otherExtraIds.add(id);
+      }
+    }
+    const otherExtraServices =
+      otherExtraIds.size > 0
+        ? await prisma.service.findMany({
+            where: { id: { in: Array.from(otherExtraIds) } },
+            select: { id: true, durationMin: true },
+          })
+        : [];
+    const durationByServiceId = new Map<string, number>(
+      otherExtraServices.map((s) => [s.id, s.durationMin])
+    );
+
     const conflict = sameDay.find((a) => {
       const aStart = new Date(a.date).getTime();
-      const aEnd = aStart + (a.service.durationMin || 30) * 60 * 1000;
+      const aDur =
+        computeAppointmentDurationMin(
+          a.service.durationMin || 0,
+          a.extraServices,
+          durationByServiceId
+        ) || 30;
+      const aEnd = aStart + aDur * 60 * 1000;
       return target.getTime() < aEnd && targetEnd.getTime() > aStart;
     });
 

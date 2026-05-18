@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
+import {
+  computeAppointmentDurationMin,
+  parseExtraServiceIds,
+} from "@/lib/utils";
 
 const ALLOWED_STATUSES = [
   "pending",
@@ -51,17 +55,101 @@ export async function PATCH(
     data.date = newDate;
   }
 
-  // If date is changing, check conflicts (skip own appointment)
-  if (newDate) {
-    const startWindow = new Date(newDate.getTime() - 30 * 60 * 1000);
-    const endWindow = new Date(newDate.getTime() + 30 * 60 * 1000);
-    const conflict = await prisma.appointment.findFirst({
+  // Tarih VEYA hizmet(ler) değişiyorsa, gerçek süreye göre çakışma kontrolü yap
+  const dateChanged = !!newDate;
+  const serviceChanged = typeof body.serviceId === "string";
+  const extrasChanged = Array.isArray(body.extraServiceIds);
+
+  if (dateChanged || serviceChanged || extrasChanged) {
+    const current = await prisma.appointment.findUnique({
+      where: { id: params.id },
+      include: { service: true },
+    });
+    if (!current) {
+      return NextResponse.json(
+        { error: "Randevu bulunamadı." },
+        { status: 404 }
+      );
+    }
+
+    const effectiveDate = newDate ?? current.date;
+    const effectiveServiceId = serviceChanged
+      ? (body.serviceId as string)
+      : current.serviceId;
+    const effectiveExtras = extrasChanged
+      ? (body.extraServiceIds as unknown[]).filter(
+          (id): id is string =>
+            typeof id === "string" && id !== effectiveServiceId
+        )
+      : parseExtraServiceIds(current.extraServices);
+
+    // Yeni süreyi hesapla (primary + extras)
+    const neededIds = new Set<string>([effectiveServiceId, ...effectiveExtras]);
+    const services = await prisma.service.findMany({
+      where: { id: { in: Array.from(neededIds) } },
+      select: { id: true, durationMin: true },
+    });
+    const durByIdLocal = new Map<string, number>(
+      services.map((s) => [s.id, s.durationMin])
+    );
+    const primaryDur = durByIdLocal.get(effectiveServiceId) || 0;
+    if (!primaryDur && serviceChanged) {
+      return NextResponse.json(
+        { error: "Hizmet bulunamadı." },
+        { status: 404 }
+      );
+    }
+    const newDur =
+      primaryDur +
+      effectiveExtras.reduce(
+        (sum, id) => sum + (durByIdLocal.get(id) || 0),
+        0
+      );
+    const newStart = effectiveDate.getTime();
+    const newEnd = newStart + newDur * 60 * 1000;
+
+    // Aynı günün diğer randevularını çek
+    const dayStart = new Date(effectiveDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(effectiveDate);
+    dayEnd.setHours(23, 59, 59, 999);
+    const others = await prisma.appointment.findMany({
       where: {
         id: { not: params.id },
-        date: { gte: startWindow, lte: endWindow },
+        date: { gte: dayStart, lte: dayEnd },
         status: { in: ["pending", "confirmed"] },
       },
       include: { service: true },
+    });
+
+    // Diğer randevuların extras sürelerini de yükle
+    const otherExtraIds = new Set<string>();
+    for (const a of others) {
+      for (const id of parseExtraServiceIds(a.extraServices)) {
+        otherExtraIds.add(id);
+      }
+    }
+    const otherExtraServices =
+      otherExtraIds.size > 0
+        ? await prisma.service.findMany({
+            where: { id: { in: Array.from(otherExtraIds) } },
+            select: { id: true, durationMin: true },
+          })
+        : [];
+    const durByIdOther = new Map<string, number>(
+      otherExtraServices.map((s) => [s.id, s.durationMin])
+    );
+
+    const conflict = others.find((a) => {
+      const aStart = new Date(a.date).getTime();
+      const aDur =
+        computeAppointmentDurationMin(
+          a.service.durationMin || 0,
+          a.extraServices,
+          durByIdOther
+        ) || 30;
+      const aEnd = aStart + aDur * 60 * 1000;
+      return newStart < aEnd && newEnd > aStart;
     });
 
     if (conflict) {

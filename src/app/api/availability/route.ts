@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  computeAppointmentDurationMin,
+  parseExtraServiceIds,
+} from "@/lib/utils";
 
 const TIME_SLOTS = [
   "09:30", "10:00", "10:30", "11:00", "11:30",
@@ -46,6 +50,25 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
+  // Bu randevulara ait extra service id'lerini topla — saç+sakal gibi çoklu
+  // hizmet seçimlerinde toplam süre primary + extras olarak hesaplanmalı.
+  const extraIds = new Set<string>();
+  for (const a of appts) {
+    for (const id of parseExtraServiceIds(a.extraServices)) {
+      extraIds.add(id);
+    }
+  }
+  const extraServices =
+    extraIds.size > 0
+      ? await prisma.service.findMany({
+          where: { id: { in: Array.from(extraIds) } },
+          select: { id: true, durationMin: true },
+        })
+      : [];
+  const durationByServiceId = new Map<string, number>(
+    extraServices.map((s) => [s.id, s.durationMin])
+  );
+
   const closeAt = (() => {
     const [ch, cm] = SHOP_CLOSE.split(":").map(Number);
     const d = new Date(start);
@@ -68,10 +91,15 @@ export async function GET(req: NextRequest) {
       continue;
     }
 
-    // Mevcut randevulardan biriyle çakışıyor mu?
+    // Mevcut randevulardan biriyle çakışıyor mu? (extras dahil toplam süre)
     const collidesAppt = appts.some((a) => {
       const aStart = new Date(a.date).getTime();
-      const aDur = a.service?.durationMin || DEFAULT_DURATION;
+      const aDur =
+        computeAppointmentDurationMin(
+          a.service?.durationMin || 0,
+          a.extraServices,
+          durationByServiceId
+        ) || DEFAULT_DURATION;
       const aEnd = aStart + aDur * 60 * 1000;
       return slotStart < aEnd && slotEnd > aStart;
     });

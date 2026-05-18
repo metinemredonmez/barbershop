@@ -76,3 +76,16 @@ export function getAppointmentTotals<
     duration: list.reduce((sum, s) => sum + s.durationMin, 0),
   };
 }
+
+// Primary service + extras toplam süresi (dk). Eksik bilgi olursa primary'ye düşer.
+export function computeAppointmentDurationMin(
+  primaryDuration: number,
+  extraServicesJson: string | null | undefined,
+  durationByServiceId: Map<string, number>
+): number {
+  let total = primaryDuration || 0;
+  for (const id of parseExtraServiceIds(extraServicesJson)) {
+    total += durationByServiceId.get(id) || 0;
+  }
+  return total;
+}
