@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "prebuild": "prisma generate",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
-    "deploy": "git pull && yarn install && prisma migrate deploy && prisma generate && yarn seed && yarn build && pm2 restart ogulcanates-web --update-env"
+    "predeploy": "git pull",
+    "deploy": "yarn install && yarn build && pm2 restart ogulcanates-web --update-env"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
