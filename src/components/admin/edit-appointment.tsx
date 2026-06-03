@@ -30,14 +30,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-const TIME_SLOTS = [
-  "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30",
-  "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00",
-  "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
-  "20:00", "20:30",
-];
-
-type Service = { id: string; name: string; price: number };
+type Service = { id: string; name: string; price: number; durationMin: number };
 
 type Appointment = {
   id: string;
@@ -81,6 +74,8 @@ export function EditAppointmentDialog({
   const [time, setTime] = useState("10:00");
   const [status, setStatus] = useState("pending");
   const [note, setNote] = useState("");
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   useEffect(() => {
     if (!appointment) return;
@@ -96,6 +91,32 @@ export function EditAppointmentDialog({
     setConflict(null);
     setConfirmDelete(false);
   }, [appointment]);
+
+  // Tarih / hizmet değişince availability'i çek. Mevcut randevunun kendi
+  // saatini her zaman seçilebilir olarak ekleyelim ki edit ekranı kendi
+  // saatini kapatmasın.
+  useEffect(() => {
+    if (!open || !appointment || !date) return;
+    setLoadingSlots(true);
+    const svc = services.find((s) => s.id === serviceId);
+    const dur = svc?.durationMin || appointment.service.durationMin || 30;
+    fetch(`/api/availability?date=${date}&duration=${dur}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const list: string[] = data.available || [];
+        // Aynı gün ve aynı saatteyse, kendi saatini de göster
+        const ownDate = new Date(appointment.date);
+        const sameDay = format(ownDate, "yyyy-MM-dd") === date;
+        const ownTime = format(ownDate, "HH:mm");
+        const merged = sameDay && !list.includes(ownTime)
+          ? [...list, ownTime].sort()
+          : list;
+        setAvailableSlots(merged);
+      })
+      .catch(() => setAvailableSlots([]))
+      .finally(() => setLoadingSlots(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, date, serviceId, appointment]);
 
   if (!appointment) return null;
 
@@ -228,7 +249,7 @@ export function EditAppointmentDialog({
                   <SelectContent>
                     {services.map((s) => (
                       <SelectItem key={s.id} value={s.id}>
-                        {s.name} — ₺{s.price}
+                        {s.name} — ₺{s.price} · {s.durationMin} dk
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -245,13 +266,28 @@ export function EditAppointmentDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Saat</Label>
-                  <Select value={time} onValueChange={setTime}>
+                  <Label className="flex items-center gap-2">
+                    Saat
+                    {loadingSlots && (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    )}
+                  </Label>
+                  <Select
+                    value={time}
+                    onValueChange={setTime}
+                    disabled={loadingSlots || availableSlots.length === 0}
+                  >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue
+                        placeholder={
+                          availableSlots.length === 0
+                            ? "Müsait saat yok"
+                            : "Saat seç"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      {TIME_SLOTS.map((t) => (
+                      {availableSlots.map((t) => (
                         <SelectItem key={t} value={t}>
                           {t}
                         </SelectItem>

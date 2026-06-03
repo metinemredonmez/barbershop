@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Loader2, CalendarPlus, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
@@ -23,14 +23,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-const TIME_SLOTS = [
-  "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30",
-  "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00",
-  "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
-  "20:00", "20:30",
-];
-
-type Service = { id: string; name: string; price: number };
+type Service = {
+  id: string;
+  name: string;
+  price: number;
+  durationMin: number;
+};
 
 export function CreateAppointmentButton({ services }: { services: Service[] }) {
   const router = useRouter();
@@ -43,16 +41,37 @@ export function CreateAppointmentButton({ services }: { services: Service[] }) {
   const [phone, setPhone] = useState("");
   const [serviceId, setServiceId] = useState("");
   const [date, setDate] = useState(today);
-  const [time, setTime] = useState("10:00");
+  const [time, setTime] = useState("");
   const [note, setNote] = useState("");
   const [status, setStatus] = useState("confirmed");
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  // Tarih veya hizmet değişince availability'i çek
+  useEffect(() => {
+    if (!open || !date) return;
+    setLoadingSlots(true);
+    const svc = services.find((s) => s.id === serviceId);
+    const dur = svc?.durationMin || 30;
+    fetch(`/api/availability?date=${date}&duration=${dur}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const list: string[] = data.available || [];
+        setAvailableSlots(list);
+        // Seçili saat artık uygun değilse temizle
+        if (time && !list.includes(time)) setTime("");
+      })
+      .catch(() => setAvailableSlots([]))
+      .finally(() => setLoadingSlots(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, date, serviceId, services]);
 
   const reset = () => {
     setCustomerName("");
     setPhone("");
     setServiceId("");
     setDate(today);
-    setTime("10:00");
+    setTime("");
     setNote("");
     setStatus("confirmed");
     setError(null);
@@ -62,6 +81,10 @@ export function CreateAppointmentButton({ services }: { services: Service[] }) {
     setError(null);
     if (!customerName.trim() || !phone.trim() || !serviceId) {
       setError("Müşteri adı, telefon ve hizmet zorunludur.");
+      return;
+    }
+    if (!time) {
+      setError("Lütfen bir saat seçin.");
       return;
     }
     setSubmitting(true);
@@ -139,7 +162,7 @@ export function CreateAppointmentButton({ services }: { services: Service[] }) {
                 <SelectContent>
                   {services.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
-                      {s.name} — ₺{s.price}
+                      {s.name} — ₺{s.price} · {s.durationMin} dk
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -153,17 +176,31 @@ export function CreateAppointmentButton({ services }: { services: Service[] }) {
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  min={today}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Saat</Label>
-                <Select value={time} onValueChange={setTime}>
+                <Label className="flex items-center gap-2">
+                  Saat
+                  {loadingSlots && (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  )}
+                </Label>
+                <Select
+                  value={time}
+                  onValueChange={setTime}
+                  disabled={loadingSlots || availableSlots.length === 0}
+                >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue
+                      placeholder={
+                        availableSlots.length === 0
+                          ? "Müsait saat yok"
+                          : "Saat seç"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    {TIME_SLOTS.map((t) => (
+                    {availableSlots.map((t) => (
                       <SelectItem key={t} value={t}>
                         {t}
                       </SelectItem>

@@ -36,32 +36,6 @@ type Service = {
   price: number;
 };
 
-const TIME_SLOTS = [
-  "09:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "11:30",
-  "12:00",
-  "12:30",
-  "13:00",
-  "13:30",
-  "14:00",
-  "14:30",
-  "15:00",
-  "15:30",
-  "16:00",
-  "16:30",
-  "17:00",
-  "17:30",
-  "18:00",
-  "18:30",
-  "19:00",
-  "19:30",
-  "20:00",
-  "20:30",
-];
-
 const STEPS = [
   { id: 1, label: "Hizmet" },
   { id: 2, label: "Tarih & Saat" },
@@ -137,7 +111,7 @@ function BookingFlow({
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
-  const [busy, setBusy] = useState<string[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -175,8 +149,8 @@ function BookingFlow({
     const dur = totalDuration > 0 ? totalDuration : 30;
     fetch(`/api/availability?date=${dateStr}&duration=${dur}`)
       .then((r) => r.json())
-      .then((data) => setBusy(data.busy || []))
-      .catch(() => setBusy([]))
+      .then((data) => setAvailableSlots(data.available || []))
+      .catch(() => setAvailableSlots([]))
       .finally(() => setLoadingSlots(false));
   }, [date, totalDuration]);
 
@@ -454,35 +428,33 @@ function BookingFlow({
                         <Loader2 className="h-3 w-3 animate-spin" />
                       )}
                     </div>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                      {TIME_SLOTS.map((t) => {
-                        const [hh, mm] = t.split(":").map(Number);
-                        const slotDate = new Date(date);
-                        slotDate.setHours(hh, mm, 0, 0);
-                        const isPastSlot = slotDate.getTime() <= Date.now();
-                        const isBusy = busy.includes(t) || isPastSlot;
-                        const selected = time === t;
-                        return (
-                          <button
-                            key={t}
-                            disabled={isBusy}
-                            onClick={() => setTime(t)}
-                            className={cn(
-                              "p-2.5 rounded-md border text-sm transition-all tabular-nums",
-                              isBusy &&
-                                "opacity-30 cursor-not-allowed line-through",
-                              !isBusy &&
+                    {!loadingSlots && availableSlots.length === 0 ? (
+                      <div className="rounded-md border border-border/60 bg-secondary/30 p-4 text-sm text-muted-foreground text-center">
+                        Bu gün için müsait saat kalmadı. Lütfen başka bir gün
+                        seçin.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                        {availableSlots.map((t) => {
+                          const selected = time === t;
+                          return (
+                            <button
+                              key={t}
+                              onClick={() => setTime(t)}
+                              className={cn(
+                                "p-2.5 rounded-md border text-sm transition-all tabular-nums",
                                 !selected &&
-                                "border-border/60 hover:border-gold/40 hover:bg-secondary/30",
-                              selected &&
-                                "border-gold bg-gold text-black font-bold"
-                            )}
-                          >
-                            {t}
-                          </button>
-                        );
-                      })}
-                    </div>
+                                  "border-border/60 hover:border-gold/40 hover:bg-secondary/30",
+                                selected &&
+                                  "border-gold bg-gold text-black font-bold"
+                              )}
+                            >
+                              {t}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
