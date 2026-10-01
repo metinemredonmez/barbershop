@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { Bell, BellRing, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,9 @@ export function PushSetup({
   externalId: string | null;
 }) {
   const [status, setStatus] = useState<Status>("loading");
-  const [sdk, setSdk] = useState<OneSignalSdk | null>(null);
+  // OneSignal bir sınıf (fonksiyon); useState'e konursa React onu updater
+  // sanıp çağırır ve sayfa çöker — ref'te tutuyoruz.
+  const sdkRef = useRef<OneSignalSdk | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -68,14 +70,15 @@ export function PushSetup({
       const sync = () =>
         setStatus(OneSignal.User.PushSubscription.optedIn ? "on" : "off");
       OneSignal.User.PushSubscription.addEventListener("change", sync);
+      sdkRef.current = OneSignal;
       sync();
-      setSdk(OneSignal);
     });
   }, [appId, externalId]);
 
   if (!externalId) return null;
 
   const enable = async () => {
+    const sdk = sdkRef.current;
     if (!sdk) return;
     setBusy(true);
     setMessage(null);
