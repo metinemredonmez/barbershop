@@ -57,16 +57,23 @@ export async function sendPush(opts: {
     };
     if (opts.url) body.url = opts.url;
 
-    // Yeni anahtarlar (os_v2_…) "Key", eski REST anahtarları "Basic" ister
-    const scheme = apiKey.startsWith("os_v2_") ? "Key" : "Basic";
-    const res = await fetch("https://api.onesignal.com/notifications?c=push", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        Authorization: `${scheme} ${apiKey}`,
-      },
-      body: JSON.stringify(body),
-    });
+    const send = (scheme: string) =>
+      fetch("https://api.onesignal.com/notifications?c=push", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          Authorization: `${scheme} ${apiKey}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+    // Yeni anahtarlar (os_v2_…) "Key", eski REST anahtarları "Basic" ister;
+    // anahtar biçimi tutmazsa diğer yöntemi de dene
+    const first = apiKey.startsWith("os_v2_") ? "Key" : "Basic";
+    let res = await send(first);
+    if (res.status === 401 || res.status === 403) {
+      res = await send(first === "Key" ? "Basic" : "Key");
+    }
 
     const text = await res.text();
     if (!res.ok) {
