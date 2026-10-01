@@ -1,13 +1,21 @@
 // OneSignal REST API ile push bildirimi gönderir.
 //
-// Env:
-//   NEXT_PUBLIC_ONESIGNAL_APP_ID  (zaten public/init için lazım)
-//   ONESIGNAL_REST_API_KEY         (server-side, REST API key)
+// Bildirim SADECE berberin cihaz(lar)ına gider: cihaz, admin panelinde
+// "Bildirimleri Aç" denince gizli bir external_id ile OneSignal'e bağlanır.
+// Bu id sunucu sırrından türetilir; dışarıdan tahmin edilip müşteri bilgisi
+// içeren bildirimlere abone olunamaz.
 //
-// REST API key OneSignal dashboard > Settings > Keys & IDs altından alınır.
+// Env:
+//   NEXT_PUBLIC_ONESIGNAL_APP_ID  (SDK init için public)
+//   ONESIGNAL_REST_API_KEY         (server-side; OneSignal > Settings > Keys & IDs)
 
+import { createHmac } from "node:crypto";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
+
+export const ONESIGNAL_APP_ID =
+  process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID ||
+  "fc33c671-fc2e-42cc-a313-29abcc5cbe22";
 
 type AppointmentForPush = {
   customerName: string;
@@ -16,44 +24,58 @@ type AppointmentForPush = {
   service: { name: string };
 };
 
+export function barberPushId(): string | null {
+  const secret = process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD;
+  if (!secret) return null;
+  const digest = createHmac("sha256", secret)
+    .update("onesignal-barber")
+    .digest("hex");
+  return `barber-${digest.slice(0, 32)}`;
+}
+
 export async function sendPush(opts: {
   title: string;
   message: string;
   url?: string;
-}): Promise<{ ok: boolean; error?: string }> {
-  const appId =
-    process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID ||
-    "fc33c671-fc2e-42cc-a313-29abcc5cbe22";
+}): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const apiKey = process.env.ONESIGNAL_REST_API_KEY;
+  const externalId = barberPushId();
 
-  if (!apiKey) {
+  if (!apiKey || !externalId) {
     console.log("[push:noop]", opts.title, "—", opts.message);
-    return { ok: true };
+    return { ok: true, skipped: true };
   }
 
   try {
     const body: Record<string, unknown> = {
-      app_id: appId,
+      app_id: ONESIGNAL_APP_ID,
+      target_channel: "push",
+      include_aliases: { external_id: [externalId] },
       headings: { en: opts.title, tr: opts.title },
       contents: { en: opts.message, tr: opts.message },
-      // Tüm abonelere gönder (berber kendi telefonunu/cihazını abone yapacak)
-      included_segments: ["Subscribed Users"],
+      priority: 10,
     };
     if (opts.url) body.url = opts.url;
 
-    const res = await fetch("https://onesignal.com/api/v1/notifications", {
+    // Yeni anahtarlar (os_v2_…) "Key", eski REST anahtarları "Basic" ister
+    const scheme = apiKey.startsWith("os_v2_") ? "Key" : "Basic";
+    const res = await fetch("https://api.onesignal.com/notifications?c=push", {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        Authorization: `Basic ${apiKey}`,
+        Authorization: `${scheme} ${apiKey}`,
       },
       body: JSON.stringify(body),
     });
 
+    const text = await res.text();
     if (!res.ok) {
-      const text = await res.text();
       console.error("[push] OneSignal error:", text);
       return { ok: false, error: text };
+    }
+    // Cihaz bağlı değilse OneSignal 200 döner ama kimseye gitmez
+    if (text.includes("All included players are not subscribed")) {
+      return { ok: false, error: "Bildirim açık cihaz bulunamadı." };
     }
     return { ok: true };
   } catch (e) {

@@ -25,7 +25,20 @@ Bu sürümde Next.js 15'e geçildi ve admin girişi yenilendi. İlk deploy'dan �
    rm -f /var/www/barbershop/yarn.lock
    ```
 
+5. **Push bildirimi için OneSignal anahtarı.** OneSignal panelinde Settings → Keys & IDs → REST API Key oluştur. Değeri `.env` dosyasına `ONESIGNAL_REST_API_KEY="..."` olarak yaz.
+
 Admin'ler deploy sonrası bir kez yeniden giriş yapmak zorunda (eski cookie geçersiz).
+
+## Berberin telefonuna bildirim açma (bir kez)
+
+Randevu bildirimi sadece admin panelinde bildirimi açılmış cihaza gider. Müşteriler abone olamaz.
+
+- **Android:** Chrome'da `https://ogulcanates.com/admin` adresini aç, giriş yap, sağ üstte **Bildirimleri Aç** butonuna bas, izin ver. Sonra **Test** butonuna bas; bildirim gelmeli.
+- **iPhone (iOS 16.4+):** Safari'de `https://ogulcanates.com/admin` adresini aç → Paylaş → **Ana Ekrana Ekle**. Ana ekrandaki "Randevular" uygulamasını aç, giriş yap, **Bildirimleri Aç** → izin ver → **Test**.
+
+Panel `randevu.ogulcanates.com` üzerinden değil, `ogulcanates.com` üzerinden açılmalı (OneSignal bu alan adına kayıtlı). `ADMIN_SESSION_SECRET` değiştirilirse bildirim telefonda yeniden açılmalı.
+
+SMS (Netgsm/Twilio ayarlıysa) sadece sabit numaraya, **+90 552 117 01 61**'e gider; müşterilere SMS gönderilmez.
 
 ## Deploy komutları
 

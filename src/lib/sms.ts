@@ -5,9 +5,9 @@
 //   - SMS_PROVIDER=netgsm   → NETGSM_USERNAME, NETGSM_PASSWORD, NETGSM_HEADER
 //   - (boş/undefined)       → console.log (geliştirme için no-op)
 //
-// Bildirim hedefi:
-//   - SMS_BARBER_TO          → işletme sahibi/berber telefonu (zorunlu, virgülle çoklu)
-//   - SMS_NOTIFY_CUSTOMER=1  → müşteriye de onay SMS'i gönder
+// Bildirim hedefi sabit: sadece berberin numarası (BARBER_NOTIFY_PHONE).
+// Müşterilere SMS gönderilmez — formdan girilen numaraya SMS atılabilseydi
+// başkalarının numarasına spam için kullanılabilirdi.
 
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
@@ -18,6 +18,8 @@ export type SendSmsArgs = {
 };
 
 type SmsResult = { ok: boolean; provider: string; error?: string };
+
+export const BARBER_NOTIFY_PHONE = "+905521170161";
 
 async function sendViaTwilio({ to, body }: SendSmsArgs): Promise<SmsResult> {
   const sid = process.env.TWILIO_ACCOUNT_SID;
@@ -109,24 +111,6 @@ function fmtDate(d: Date | string) {
 
 export async function notifyNewAppointment(appt: AppointmentForSms) {
   const brand = process.env.NEXT_PUBLIC_BARBER_BRAND || "Berber";
-  const barberTo = process.env.SMS_BARBER_TO;
-  const results: SmsResult[] = [];
-
-  if (barberTo) {
-    const targets = barberTo
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const body = `${brand} - Yeni Randevu\n${appt.customerName}\nTel: ${appt.phone}\nHizmet: ${appt.service.name}\n${fmtDate(appt.date)}`;
-    for (const to of targets) {
-      results.push(await sendSms({ to, body }));
-    }
-  }
-
-  if (process.env.SMS_NOTIFY_CUSTOMER === "1" && appt.phone) {
-    const body = `${brand}: Randevunuz alındı. ${appt.service.name} - ${fmtDate(appt.date)}. Görüşmek üzere!`;
-    results.push(await sendSms({ to: appt.phone, body }));
-  }
-
-  return results;
+  const body = `${brand} - Yeni Randevu\n${appt.customerName}\nTel: ${appt.phone}\nHizmet: ${appt.service.name}\n${fmtDate(appt.date)}`;
+  return [await sendSms({ to: BARBER_NOTIFY_PHONE, body })];
 }

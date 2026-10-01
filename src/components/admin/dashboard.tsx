@@ -44,6 +44,7 @@ import { CalendarView } from "./calendar";
 import { CreateAppointmentButton } from "./create-appointment";
 import { EditAppointmentDialog } from "./edit-appointment";
 import { BlockedSlotsCard } from "./blocked-slots";
+import { PushSetup } from "./push-setup";
 
 type Appointment = {
   id: string;
@@ -99,9 +100,11 @@ function relativeDay(date: Date) {
 export function AdminDashboard({
   appointments,
   services,
+  push,
 }: {
   appointments: Appointment[];
   services: Service[];
+  push: { appId: string; externalId: string | null };
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -209,6 +212,7 @@ export function AdminDashboard({
             </div>
           </Link>
           <div className="flex items-center gap-2">
+            <PushSetup appId={push.appId} externalId={push.externalId} />
             <Button variant="ghost" size="sm" asChild>
               <Link href="/" target="_blank">
                 <ExternalLink className="h-4 w-4 mr-1.5" />

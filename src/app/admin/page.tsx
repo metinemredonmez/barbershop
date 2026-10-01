@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isAdmin } from "@/lib/auth";
+import { ONESIGNAL_APP_ID, barberPushId } from "@/lib/push";
 import { AdminDashboard } from "@/components/admin/dashboard";
 
 export const dynamic = "force-dynamic";
@@ -18,5 +19,9 @@ export default async function AdminPage() {
     prisma.service.findMany({ orderBy: { order: "asc" } }),
   ]);
 
-  return <AdminDashboard appointments={appointments} services={services} />;
+  return <AdminDashboard
+      appointments={appointments}
+      services={services}
+      push={{ appId: ONESIGNAL_APP_ID, externalId: barberPushId() }}
+    />;
 }

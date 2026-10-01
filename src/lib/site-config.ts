@@ -1,17 +1,17 @@
 export const siteConfig = {
-  name: process.env.NEXT_PUBLIC_BARBER_NAME || "Ali Usta",
-  brand: process.env.NEXT_PUBLIC_BARBER_BRAND || "ALI BARBER",
+  name: process.env.NEXT_PUBLIC_BARBER_NAME || "Oğulcan Ateş",
+  brand: process.env.NEXT_PUBLIC_BARBER_BRAND || "OĞULCAN ATEŞ",
   tagline:
-    process.env.NEXT_PUBLIC_BARBER_TAGLINE || "Premium Erkek Bakımı",
-  phone: process.env.NEXT_PUBLIC_BARBER_PHONE || "+90 555 123 45 67",
-  whatsapp: process.env.NEXT_PUBLIC_BARBER_WHATSAPP || "905551234567",
-  instagram: process.env.NEXT_PUBLIC_BARBER_INSTAGRAM || "alibarber",
+    process.env.NEXT_PUBLIC_BARBER_TAGLINE || "Barber's Club",
+  phone: process.env.NEXT_PUBLIC_BARBER_PHONE || "0552 117 01 61",
+  whatsapp: process.env.NEXT_PUBLIC_BARBER_WHATSAPP || "905521170161",
+  instagram: process.env.NEXT_PUBLIC_BARBER_INSTAGRAM || "ogulcanatesofficial",
   address:
     process.env.NEXT_PUBLIC_BARBER_ADDRESS ||
-    "Bağdat Caddesi No:123, Kadıköy / İstanbul",
+    "Feyzullah Mah. 34843, Maltepe / İstanbul",
   mapUrl:
     process.env.NEXT_PUBLIC_BARBER_MAP ||
-    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12039.408!2d29.0263!3d40.9659!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14cab7650b33ddcd%3A0x1!2sKad%C4%B1k%C3%B6y!5e0!3m2!1str!2str!4v1700000000000",
+    "https://www.google.com/maps?q=Feyzullah+Mah.+Maltepe+%C4%B0stanbul&output=embed",
   workingHours: [
     { day: "Pazartesi", hours: "09:30 — 21:00" },
     { day: "Salı", hours: "09:30 — 21:00" },
