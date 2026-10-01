@@ -1,13 +1,12 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { isAdmin } from "@/lib/auth";
 import { AdminDashboard } from "@/components/admin/dashboard";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const auth = cookies().get("admin-auth")?.value;
-  if (auth !== "ok") {
+  if (!(await isAdmin())) {
     redirect("/admin/login");
   }
 

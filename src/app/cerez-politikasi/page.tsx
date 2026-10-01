@@ -28,7 +28,7 @@ export default function CerezPage() {
       </p>
       <ul>
         <li>
-          <strong>admin-auth:</strong> Yönetim panelinde oturum yönetimi için
+          <strong>admin_session:</strong> Yönetim panelinde oturum yönetimi için
           (yalnızca admin girişinde, 8 saat sonra otomatik silinir)
         </li>
         <li>

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { SHOP_CLOSE, SHOP_OPEN } from "@/lib/booking";
 import {
   computeAppointmentDurationMin,
   parseExtraServiceIds,
 } from "@/lib/utils";
 
 const DEFAULT_DURATION = 30;
-const SHOP_OPEN = "09:30";
-const SHOP_CLOSE = "21:00"; // randevu bu saatten sonra bitmemeli
+const MAX_DURATION = 600;
 const GRID_MIN = 30; // standart slot aralığı (dk) — boş zamanlarda görülen aralık
 
 function toHM(ts: number): string {
@@ -22,15 +22,21 @@ export async function GET(req: NextRequest) {
   if (!dateStr) {
     return NextResponse.json({ available: [], busy: [] });
   }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return NextResponse.json({ error: "Geçersiz tarih." }, { status: 400 });
+  }
 
   const durationParam = Number(req.nextUrl.searchParams.get("duration"));
   const newDuration =
     Number.isFinite(durationParam) && durationParam > 0
-      ? durationParam
+      ? Math.min(durationParam, MAX_DURATION)
       : DEFAULT_DURATION;
 
   const start = new Date(`${dateStr}T00:00:00.000`);
   const end = new Date(`${dateStr}T23:59:59.999`);
+  if (Number.isNaN(start.getTime())) {
+    return NextResponse.json({ error: "Geçersiz tarih." }, { status: 400 });
+  }
 
   const [appts, blocks] = await Promise.all([
     prisma.appointment.findMany({

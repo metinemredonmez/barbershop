@@ -1,23 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-
-function requireAdmin() {
-  return cookies().get("admin-auth")?.value === "ok";
-}
+import { isAdmin } from "@/lib/auth";
+import { readJsonBody } from "@/lib/http";
 
 // GET — public, müsaitlik için kullanılır.
 // ?date=YYYY-MM-DD verilirse sadece o güne ait kayıtlar döner.
 export async function GET(req: NextRequest) {
   const dateStr = req.nextUrl.searchParams.get("date");
+  const admin = await isAdmin();
 
   if (dateStr) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return NextResponse.json({ error: "Geçersiz tarih." }, { status: 400 });
+    }
     const start = new Date(`${dateStr}T00:00:00.000`);
     const end = new Date(`${dateStr}T23:59:59.999`);
     if (Number.isNaN(start.getTime())) {
       return NextResponse.json({ error: "Geçersiz tarih." }, { status: 400 });
     }
     const list = await prisma.blockedSlot.findMany({
+      // Mola/izin açıklaması (reason) özel bilgi olabilir — sadece admin görür
+      ...(!admin && {
+        select: { id: true, startAt: true, endAt: true, type: true },
+      }),
       where: {
         OR: [
           { startAt: { gte: start, lte: end } },
@@ -31,7 +36,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Tüm liste — sadece admin
-  if (!requireAdmin()) {
+  if (!admin) {
     return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   }
   const list = await prisma.blockedSlot.findMany({
@@ -41,11 +46,14 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!requireAdmin()) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   }
   try {
-    const body = await req.json();
+    const body = await readJsonBody(req);
+    if (!body) {
+      return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+    }
     const { startAt, endAt, type, reason } = body;
 
     if (!startAt || !endAt) {
@@ -54,8 +62,8 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const start = new Date(startAt);
-    const end = new Date(endAt);
+    const start = new Date(startAt as string);
+    const end = new Date(endAt as string);
     if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
       return NextResponse.json({ error: "Geçersiz tarih." }, { status: 400 });
     }
@@ -73,7 +81,10 @@ export async function POST(req: NextRequest) {
         startAt: start,
         endAt: end,
         type: validType,
-        reason: typeof reason === "string" && reason.trim() ? reason.trim() : null,
+        reason:
+          typeof reason === "string" && reason.trim()
+            ? reason.trim().slice(0, 200)
+            : null,
       },
     });
 

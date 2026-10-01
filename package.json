@@ -11,7 +11,7 @@
     "seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
     "predeploy": "git pull",
-    "deploy": "yarn install && yarn build && pm2 restart ogulcanates-web --update-env"
+    "deploy": "npm ci && prisma migrate deploy && npm run seed && npm run build && pm2 restart ogulcanates-web --update-env"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -26,20 +26,20 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.4.2",
     "lucide-react": "^0.469.0",
-    "next": "14.2.35",
+    "next": "^15.5.27",
     "prisma": "^5.22.0",
-    "react": "^18",
-    "react-dom": "^18",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "eslint": "^8",
-    "eslint-config-next": "14.2.35",
-    "postcss": "^8",
+    "eslint-config-next": "^15.5.27",
+    "postcss": "^8.5.28",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",

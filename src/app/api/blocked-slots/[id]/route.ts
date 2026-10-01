@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-
-function requireAdmin() {
-  return cookies().get("admin-auth")?.value === "ok";
-}
+import { isAdmin } from "@/lib/auth";
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!requireAdmin()) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   }
+  const { id } = await params;
   try {
-    await prisma.blockedSlot.delete({ where: { id: params.id } });
+    await prisma.blockedSlot.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error(e);

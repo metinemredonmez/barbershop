@@ -7,7 +7,7 @@ Premium dark theme berber web sitesi + online randevu sistemi + admin paneli.
 - https://randevu.ogulcanates.com (alias)
 
 ## Stack
-- Next.js 14 (App Router) + TypeScript
+- Next.js 15 (App Router) + React 19 + TypeScript
 - Tailwind CSS + shadcn/ui (premium dark + altın aksan)
 - Prisma + SQLite
 - PM2 process manager + LiteSpeed (CyberPanel) reverse proxy
@@ -32,6 +32,16 @@ Premium dark theme berber web sitesi + online randevu sistemi + admin paneli.
 - **Yeni Randevu** butonu — admin manuel ekleyebilir
 - **Edit dialog**: tüm alan değişimi + çakışma uyarısı (sarı warning UI) + delete
 - Çoklu hizmet desteği — primary + extras (+N rozeti)
+
+### Güvenlik
+- Admin oturumu HMAC imzalı, 8 saatlik cookie (`admin_session`). `ADMIN_PASSWORD` veya `ADMIN_SESSION_SECRET` değişince tüm oturumlar kapanır.
+- Admin girişinde IP başına 15 dakikada 10 deneme sınırı.
+- Public randevu: IP başına saatte 10 istek, telefon başına en fazla 3 aktif randevu, sunucu tarafında çalışma saati / Pazar / 30 gün kontrolü, alan uzunluk ve format doğrulaması.
+- Çakışma kontrolü + kayıt sıraya alınır (aynı saate çift randevu oluşmaz). Rate limit ve kilit bellek içidir; **tek pm2 instance (fork mode)** varsayılır.
+- Public yanıtlarda başka müşterinin adı veya mola açıklaması gösterilmez.
+- Başka siteden tetiklenen (cross-site) POST/PATCH/DELETE istekleri `middleware.ts` ile reddedilir.
+- Güvenlik başlıkları (`next.config.mjs`): HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, CSP `frame-ancestors`.
+- Saatler sunucunun saat dilimine göre hesaplanır; sunucuda `TZ=Europe/Istanbul` olmalı.
 
 ## Kurulum (local)
 
@@ -65,19 +75,7 @@ pm2 start ecosystem.config.js
 pm2 save
 ```
 
-Sonraki güncelleme (tek komut):
-```bash
-yarn deploy
-```
-
-Bu şunu yapar:
-1. `git pull`
-2. `yarn install` (postinstall ile prisma generate)
-3. `prisma migrate deploy`
-4. `prisma generate` (idempotent)
-5. `yarn seed` (yeni hizmet vs.)
-6. `yarn build`
-7. `pm2 restart ogulcanates-web --update-env`
+Sonraki güncellemeler için adımlar ve kontroller: [DEPLOY.md](DEPLOY.md).
 
 ## Sayfalar
 - `/` — Landing + popup booking

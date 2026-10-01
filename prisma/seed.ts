@@ -11,7 +11,7 @@ const services = [
     name: "Profesyonel Saç Kesimi",
     description: "Kişiye özel anatomik saç kesimi. Yüz şekline ve tarza özel.",
     durationMin: 30,
-    price: 600,
+    price: 700,
     order: 1,
   },
   {
@@ -19,7 +19,7 @@ const services = [
     name: "Profesyonel Sakal Kesimi",
     description: "Yüz hatlarına göre keskin, ölçülü sakal tasarımı.",
     durationMin: 20,
-    price: 300,
+    price: 350,
     order: 2,
   },
   {
@@ -28,7 +28,7 @@ const services = [
     description:
       "Anatomik saç kesimi + sakal tasarımı kombinasyonu. En çok tercih edilen paket.",
     durationMin: 40,
-    price: 900,
+    price: 1000,
     order: 3,
   },
   {
